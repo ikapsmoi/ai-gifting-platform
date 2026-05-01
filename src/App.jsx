@@ -106,7 +106,7 @@ export default function App() {
         throw new Error(payload.error || "Could not generate recommendations.");
       }
 
-      setResult(payload.data);
+      setResult(payload?.data || null);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
