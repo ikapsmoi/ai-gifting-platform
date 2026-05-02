@@ -3,7 +3,6 @@ import productsData from "./data/transformed_products.json";
 
 const WHATSAPP_URL = "https://wa.me/919871621921";
 
-// CHANGED 4: Expanded to 10 items
 const popularHrSearches = [
   "Welcome kits",
   "Eco friendly",
@@ -112,7 +111,6 @@ export default function App() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState(null);
   
-  // CHANGED 1: State for Hero rotating text
   const [heroWordIndex, setHeroWordIndex] = useState(0);
 
   useEffect(() => {
@@ -175,7 +173,6 @@ export default function App() {
           })),
         });
 
-        // CHANGED 2: Auto-scroll to results after setting state
         setTimeout(() => {
           document.getElementById("ai-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100);
@@ -236,14 +233,12 @@ export default function App() {
     if (canSubmit) executeSearch(input, selectedWords);
   };
 
-  // CHANGED 3: Scroll handlers
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
   return (
     <main className="overflow-x-hidden min-h-screen bg-slate-50 pb-32 text-slate-900 md:pb-0 font-sans w-full selection:bg-orange-200">
       
-      {/* Inline styles for custom animations */}
       <style>{`
         .animate-fade-scroll {
           animation: fadeScroll 3s ease-in-out infinite;
@@ -299,7 +294,6 @@ export default function App() {
 
           <h1 className="w-full text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] tracking-tight text-slate-900 min-h-[90px] sm:min-h-[140px]">
             Real products your <br className="hidden sm:block"/>
-            {/* CHANGED 1: Animated scrolling/fading word */}
             <span className="text-orange-500 inline-block animate-fade-scroll">
               {animatedHeroWords[heroWordIndex]}
             </span> will love.
@@ -348,8 +342,8 @@ export default function App() {
             <p className="mb-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
               Popular Searches
             </p>
-            {/* CHANGED 4: Smaller text and 10 items */}
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-4 sm:mx-0 sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            {/* CHANGED: Flex-wrap applied to stop horizontal overflow and force stacking */}
+            <div className="flex flex-wrap gap-2 pb-4">
               {popularHrSearches.map((brief) => (
                 <button
                   className="shrink-0 rounded-lg bg-white px-3 py-2 text-[10px] sm:text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-900/5 transition-all active:scale-95 hover:shadow-md flex items-center gap-1.5"
@@ -459,7 +453,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* CHANGED 3: FLOATING NAVIGATION PANEL (Up, Down, WA) */}
+      {/* FLOATING NAVIGATION PANEL (Up, Down, WA) */}
       <div className="fixed bottom-[110px] right-4 md:bottom-8 md:right-8 z-50 flex flex-col gap-2">
         <button onClick={scrollToTop} className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg ring-1 ring-slate-900/10 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-90" title="Scroll to Top">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
@@ -585,7 +579,6 @@ function ProductGrid({ products }) {
 }
 
 function Footer() {
-  // CHANGED 5: Replicated array to make seamless infinite marquee
   const seamlessLogos = [...deliveredBrandLogos, ...deliveredBrandLogos, ...deliveredBrandLogos, ...deliveredBrandLogos];
 
   return (
@@ -604,9 +597,7 @@ function Footer() {
             
             <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Trusted By</p>
             
-            {/* CHANGED 5: Infinite Marquee for Footer Logos */}
             <div className="w-full relative overflow-hidden flex -ml-4">
-               {/* Faded edges for sleek look */}
                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none"></div>
                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none"></div>
                
