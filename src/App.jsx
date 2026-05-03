@@ -108,7 +108,7 @@ export default function App() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [hasExited, setHasExited] = useState(false);
   
-  // UPGRADE 1: Smart Scroll Detection
+  // Intersection Observer State
   const [showStickySearch, setShowStickySearch] = useState(false);
   const heroSearchRef = useRef(null);
 
@@ -131,40 +131,24 @@ export default function App() {
     return () => document.removeEventListener("mouseleave", handleMouseLeave);
   }, [hasExited]);
 
-  // UPGRADE 1: Intersection Observer for Mobile Search Island
+  // Observer for Mobile Search Island
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        // If the hero search bar is NOT visible, show the sticky one
-        setShowStickySearch(!entry.isIntersecting);
-      },
-      { threshold: 0, rootMargin: "-100px 0px 0px 0px" } // Offset to trigger slightly early
+      ([entry]) => { setShowStickySearch(!entry.isIntersecting); },
+      { threshold: 0, rootMargin: "-100px 0px 0px 0px" }
     );
-
-    if (heroSearchRef.current) {
-      observer.observe(heroSearchRef.current);
-    }
-
-    return () => {
-      if (heroSearchRef.current) observer.unobserve(heroSearchRef.current);
-    };
+    if (heroSearchRef.current) observer.observe(heroSearchRef.current);
+    return () => { if (heroSearchRef.current) observer.unobserve(heroSearchRef.current); };
   }, []);
 
   const { allProducts, uniqueWords } = useMemo(() => {
     const rawList = Array.isArray(productsData) ? productsData : (productsData?.products || []);
     const wordsSet = new Set();
-    
     const processed = rawList.map((p, index) => {
-      if (Array.isArray(p.leader_search_words)) {
-        p.leader_search_words.forEach(w => wordsSet.add(w.toLowerCase()));
-      }
+      if (Array.isArray(p.leader_search_words)) p.leader_search_words.forEach(w => wordsSet.add(w.toLowerCase()));
       return { ...p, uniqueId: p.id || `prod-${index}` };
     });
-
-    return { 
-      allProducts: processed, 
-      uniqueWords: Array.from(wordsSet).sort() 
-    };
+    return { allProducts: processed, uniqueWords: Array.from(wordsSet).sort() };
   }, []);
 
   const showcaseProducts = useMemo(() => allProducts.slice(0, 8), [allProducts]);
@@ -172,17 +156,11 @@ export default function App() {
   const giftOptions = (result?.giftOptions || []).slice(0, 20);
 
   const executeSearch = (currentInput, currentWords) => {
-    if (currentInput.trim().length < 2 && currentWords.length === 0) {
-      setResult(null);
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
+    if (currentInput.trim().length < 2 && currentWords.length === 0) { setResult(null); return; }
+    setIsLoading(true); setError("");
 
     try {
       const filtered = getRecommendations(currentInput, allProducts, currentWords);
-
       if (filtered.length === 0) {
         setError("No matching products found. Try adjusting your keywords.");
         setResult(null);
@@ -190,20 +168,13 @@ export default function App() {
         const conditions = [];
         if (currentWords.length > 0) conditions.push(`the tags [${currentWords.join(" + ")}]`);
         if (currentInput.trim()) conditions.push(`"${currentInput.trim()}"`);
-        
         const summaryText = `We analyzed the catalog and curated ${filtered.length} perfect matches based on ${conditions.join(" and ")}.`;
 
         setResult({
           summary: summaryText,
-          giftOptions: filtered.map((p, index) => ({
-            ...p,
-            badge: index === 0 ? "Top Pick" : "Recommended",
-          })),
+          giftOptions: filtered.map((p, index) => ({ ...p, badge: index === 0 ? "Top Pick" : "Recommended" })),
         });
-
-        setTimeout(() => {
-          document.getElementById("ai-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
+        setTimeout(() => { document.getElementById("ai-results")?.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
       }
     } catch (err) {
       setError("An error occurred during search.");
@@ -216,23 +187,16 @@ export default function App() {
     setInput(val);
     if (val.trim().length > 1) {
       const q = val.toLowerCase();
-      const matches = allProducts
-        .filter(p => p.name.toLowerCase().includes(q))
-        .map(p => p.name);
+      const matches = allProducts.filter(p => p.name.toLowerCase().includes(q)).map(p => p.name);
       setSuggestions(Array.from(new Set(matches)).slice(0, 5));
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
     }
-
     if (typingTimeout) clearTimeout(typingTimeout);
-    
     setTypingTimeout(setTimeout(() => {
-      if (val.trim().length > 1 || selectedWords.length > 0) {
-        executeSearch(val, selectedWords);
-      } else if (val.trim().length === 0 && selectedWords.length === 0) {
-        setResult(null);
-      }
+      if (val.trim().length > 1 || selectedWords.length > 0) executeSearch(val, selectedWords);
+      else if (val.trim().length === 0 && selectedWords.length === 0) setResult(null);
     }, 500));
   };
 
@@ -244,11 +208,8 @@ export default function App() {
   };
 
   const toggleWord = (word) => {
-    const newWords = selectedWords.includes(word) 
-      ? selectedWords.filter(w => w !== word) 
-      : [...selectedWords, word];
-    setSelectedWords(newWords);
-    executeSearch(input, newWords); 
+    const newWords = selectedWords.includes(word) ? selectedWords.filter(w => w !== word) : [...selectedWords, word];
+    setSelectedWords(newWords); executeSearch(input, newWords); 
   };
 
   const handleFormSubmit = (event) => {
@@ -297,11 +258,38 @@ export default function App() {
           background-size: 40px 40px;
           background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
         }
+
+        /* UPGRADED UI/UX ANIMATIONS */
+        .bg-noise {
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
+        }
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 3s ease infinite; }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-float { animation: float 5s ease-in-out infinite; }
+        
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer::after {
+          content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+          transform: translateX(-100%); animation: shimmer 2.5s infinite;
+        }
+        .stagger-1 { animation-delay: 100ms; }
+        .stagger-2 { animation-delay: 200ms; }
+        .stagger-3 { animation-delay: 300ms; }
       `}</style>
 
-      {/* HEADER - Upgraded with premium styling */}
+      {/* HEADER */}
       <header className="sticky top-0 z-50 w-full bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
-        {/* Animated glowing top border */}
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-50"></div>
         <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8 relative z-10">
           <a className="flex items-center gap-2 group" href="#top">
@@ -329,70 +317,71 @@ export default function App() {
         </nav>
       </header>
 
-      {/* HERO SECTION - Upgraded with Ambient Background */}
+      {/* HERO SECTION - Deeply Textured & Levitated */}
       <section className="relative mx-auto w-full overflow-hidden" id="top">
-        {/* UPGRADE 2: Corporate Ambient Background */}
+        {/* Ambient Glassmorphism + Textured Noise Overlay */}
         <div className="absolute inset-0 z-0 bg-slate-50">
           <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
-          <div className="absolute top-0 -left-4 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-orange-400/20 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-32 left-20 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-amber-200/20 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob animation-delay-4000"></div>
-          {/* Frosted Glass overlay to make it look expensive */}
-          <div className="absolute inset-0 bg-white/40 backdrop-blur-[20px] sm:backdrop-blur-[50px]"></div>
+          <div className="absolute inset-0 bg-noise opacity-100 mix-blend-overlay z-10 pointer-events-none"></div>
+          
+          <div className="absolute top-0 -left-4 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-orange-400/30 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-amber-300/20 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-32 left-20 w-[20rem] sm:w-[40rem] h-[20rem] sm:h-[40rem] bg-blue-200/30 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob animation-delay-4000"></div>
+          
+          <div className="absolute inset-0 bg-white/30 backdrop-blur-[12px] z-0"></div>
         </div>
 
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-12 pt-8 sm:px-6 sm:py-16 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
-          <div className="w-full flex flex-col items-start min-w-0">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/80 backdrop-blur-sm px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+        <div className="relative z-20 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-12 pt-12 sm:px-6 sm:py-20 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+          <div className="w-full flex flex-col items-start min-w-0 animate-slide-up">
+            
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-black tracking-wide text-slate-700 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-105">
+              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse ring-4 ring-green-500/20"></span>
               AI-Powered Corporate Gifting
             </div>
 
-            <h1 className="w-full text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] tracking-tight text-slate-900 min-h-[90px] sm:min-h-[140px]">
+            <h1 className="w-full text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-[5rem] font-black leading-[1.05] tracking-tight text-slate-900 min-h-[100px] sm:min-h-[160px] drop-shadow-sm">
               Real products your <br className="hidden sm:block"/>
-              <span className="text-orange-500 inline-block animate-fade-scroll">
+              {/* UPGRADE: Gold-Foil Typography */}
+              <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 bg-clip-text text-transparent animate-gradient-x inline-block animate-fade-scroll py-2">
                 {animatedHeroWords[heroWordIndex]}
               </span> will love.
             </h1>
 
-            <div className="mt-4 mb-8 w-full max-w-2xl flex flex-col gap-4 min-w-0">
-              <p className="text-base sm:text-lg leading-relaxed text-slate-700 font-medium">
-                Tell our AI what you need. We instantly curate the perfect merchandise, backed by our enterprise guarantee.
+            <div className="mt-4 mb-10 w-full max-w-2xl flex flex-col gap-5 min-w-0">
+              <p className="text-lg sm:text-xl leading-relaxed text-slate-600 font-medium max-w-lg">
+                Frictionless corporate gifting.
               </p>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                 {trustMetrics.map((metric, i) => {
                   const isActive = heroWordIndex === i;
                   return (
                     <div 
                       key={i} 
-                      className={`relative overflow-hidden flex items-center gap-2 rounded-full px-3 py-2 sm:px-4 sm:py-2 text-[11px] sm:text-sm font-bold shadow-sm transition-all duration-500 cursor-default backdrop-blur-md ${
-                        isActive 
-                          ? "bg-slate-900 text-white ring-1 ring-slate-900 scale-105 shadow-md" 
-                          : "bg-white/70 text-slate-700 ring-1 ring-slate-900/5 hover:ring-slate-900/10"
-                      }`}
+                      className={`relative overflow-hidden flex items-center gap-2.5 rounded-full px-4 py-2.5 sm:px-5 sm:py-3 text-[11px] sm:text-sm font-bold shadow-md transition-all duration-500 cursor-default backdrop-blur-xl border border-white/40 animate-float`}
+                      style={{ animationDelay: `${i * 200}ms` }}
                     >
-                      {isActive && <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-sweep pointer-events-none z-10" />}
-                      <span className={`transition-colors duration-500 ${isActive ? "text-orange-400" : "text-orange-500"}`}>
+                      {isActive && <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent animate-sweep pointer-events-none z-10" />}
+                      <span className={`transition-colors duration-500 ${isActive ? "text-orange-500 scale-110" : "text-slate-400"}`}>
                         {metric.icon}
                       </span>
-                      {metric.text}
+                      <span className={isActive ? "text-slate-900" : "text-slate-600"}>{metric.text}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            <div className="mb-6 w-full">
+            <div className="mb-8 w-full stagger-1">
                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1 pb-1 scrollbar-hide">
                  {uniqueWords.slice(0, 15).map(word => (
                     <button
                       key={word}
                       onClick={() => toggleWord(word)}
                       type="button"
-                      className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95 backdrop-blur-md ${
+                      className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all active:scale-95 backdrop-blur-md border ${
                         selectedWords.includes(word) 
-                        ? "bg-slate-900 text-white shadow-md ring-2 ring-slate-900 ring-offset-2 ring-offset-transparent" 
-                        : "bg-white/70 text-slate-700 shadow-sm ring-1 ring-slate-900/5 hover:ring-slate-900/20 hover:bg-white"
+                        ? "bg-slate-900 text-white shadow-lg border-slate-900 ring-2 ring-slate-900 ring-offset-2 ring-offset-transparent" 
+                        : "bg-white/80 text-slate-600 border-white/60 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] hover:shadow-md hover:-translate-y-0.5"
                       }`}
                     >
                       {word}
@@ -401,47 +390,46 @@ export default function App() {
                </div>
             </div>
 
-            {/* UPGRADE 1: Ref attached to the main search container */}
-            <div className="w-full max-w-2xl min-w-0" ref={heroSearchRef}>
-              <GiftSearchForm
-                canSubmit={canSubmit}
-                input={input}
-                isLoading={isLoading}
-                onChange={handleInputChange}
-                onSubmit={handleFormSubmit}
-                variant="hero"
-                suggestions={suggestions}
-                showSuggestions={showSuggestions}
-                onSuggestionClick={handleSuggestionClick}
-                onFocus={() => input.trim().length > 1 && setShowSuggestions(true)}
-                onBlur={() => setShowSuggestions(false)}
-              />
+            {/* Heavy Lift Drop Shadow on Search Form */}
+            <div className="w-full max-w-2xl min-w-0 stagger-2" ref={heroSearchRef}>
+              <div className="p-2 sm:p-3 bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-white/80">
+                <GiftSearchForm
+                  canSubmit={canSubmit}
+                  input={input}
+                  isLoading={isLoading}
+                  onChange={handleInputChange}
+                  onSubmit={handleFormSubmit}
+                  variant="hero"
+                  suggestions={suggestions}
+                  showSuggestions={showSuggestions}
+                  onSuggestionClick={handleSuggestionClick}
+                  onFocus={() => input.trim().length > 1 && setShowSuggestions(true)}
+                  onBlur={() => setShowSuggestions(false)}
+                />
+              </div>
             </div>
 
-            <div className="mt-8 w-full min-w-0">
-              <p className="mb-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">
-                Popular Searches
+            <div className="mt-8 w-full min-w-0 stagger-3">
+              <p className="mb-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
+                Trending Briefs
               </p>
-              <div className="grid grid-cols-3 gap-2 pb-4">
-                {popularHrSearches.map((brief) => (
+              <div className="flex flex-wrap gap-2 pb-4">
+                {popularHrSearches.slice(0,4).map((brief) => (
                   <button
-                    className="shrink-0 rounded-lg bg-white/70 backdrop-blur-md px-2 py-2 text-[10px] sm:text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-900/5 transition-all active:scale-95 hover:shadow-md hover:bg-white flex items-center justify-center gap-1.5 text-center leading-tight"
+                    className="shrink-0 rounded-xl bg-white/70 backdrop-blur-xl px-3 py-2 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm border border-white/60 transition-all active:scale-95 hover:shadow-md hover:bg-white hover:-translate-y-0.5 flex items-center justify-center gap-1.5 leading-tight"
                     key={brief}
-                    onClick={() => {
-                      setInput(brief);
-                      executeSearch(brief, selectedWords);
-                    }}
+                    onClick={() => { setInput(brief); executeSearch(brief, selectedWords); }}
                     type="button"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500 shrink-0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span className="truncate">{brief}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-orange-400 shrink-0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span>{brief}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {error && (
-              <div className="mt-6 w-full rounded-2xl bg-red-50/90 backdrop-blur-md p-4 text-sm font-bold text-red-600 border border-red-100 flex items-center gap-3">
+              <div className="mt-6 w-full rounded-2xl bg-red-50/90 backdrop-blur-md p-4 text-sm font-bold text-red-600 border border-red-100 flex items-center gap-3 shadow-lg">
                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 {error}
               </div>
@@ -484,12 +472,12 @@ export default function App() {
 
       <section className="mx-auto grid w-full max-w-7xl gap-4 sm:gap-6 px-4 py-16 sm:py-24 sm:px-6 md:grid-cols-3 lg:px-8" id="how-it-works">
         {processSteps.map((step, index) => (
-          <article className="rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-900/5 flex flex-col items-start" key={step.title}>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-black text-lg mb-6">
+          <article className="rounded-[2.5rem] bg-white p-8 shadow-sm ring-1 ring-slate-900/5 flex flex-col items-start hover:shadow-xl hover:-translate-y-1 transition-all duration-300" key={step.title}>
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 font-black text-xl mb-6 ring-1 ring-orange-100 shadow-inner">
               {index + 1}
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900">{step.title}</h3>
-            <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-500">{step.body}</p>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-3">{step.title}</h3>
+            <p className="text-sm sm:text-base leading-relaxed text-slate-500 font-medium">{step.body}</p>
           </article>
         ))}
       </section>
@@ -500,7 +488,6 @@ export default function App() {
 
       {showExitModal && <ExitIntentModal onClose={() => setShowExitModal(false)} />}
 
-      {/* UPGRADE 1: Only show floating search when main search is hidden */}
       <div 
         className={`fixed bottom-20 left-4 right-4 z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           showStickySearch 
@@ -508,7 +495,7 @@ export default function App() {
             : 'translate-y-12 opacity-0 pointer-events-none'
         }`}
       >
-        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-[2rem] shadow-2xl ring-1 ring-slate-900/10">
+        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-[2.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/60">
           <GiftSearchForm
             canSubmit={canSubmit}
             input={input}
@@ -521,14 +508,14 @@ export default function App() {
       </div>
 
       <div className="fixed bottom-[140px] right-4 md:bottom-8 md:right-8 z-40 flex flex-col gap-2">
-        <button onClick={scrollToTop} className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg ring-1 ring-slate-900/10 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-90" title="Scroll to Top">
+        <button onClick={scrollToTop} className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg shadow-slate-200 ring-1 ring-slate-100 hover:text-slate-900 transition-all hover:scale-110 active:scale-95" title="Scroll to Top">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
         </button>
-        <button onClick={scrollToBottom} className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg ring-1 ring-slate-900/10 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-90" title="Scroll to Bottom">
+        <button onClick={scrollToBottom} className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg shadow-slate-200 ring-1 ring-slate-100 hover:text-slate-900 transition-all hover:scale-110 active:scale-95" title="Scroll to Bottom">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <a href={getWhatsAppUrl()} rel="noreferrer" target="_blank" className="hidden md:flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/30 hover:bg-[#20bd5a] transition-all active:scale-90 mt-1" title="Talk to expert">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        <a href={getWhatsAppUrl()} rel="noreferrer" target="_blank" className="hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-[#25D366]/40 hover:bg-[#20bd5a] transition-all hover:scale-110 active:scale-95 mt-2" title="Talk to expert">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
         </a>
       </div>
 
@@ -581,39 +568,40 @@ function RecipientChoiceCollections() {
   ];
 
   return (
-    <section id="collections" className="w-full bg-white py-16 sm:py-24 border-y border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="collections" className="w-full bg-white py-16 sm:py-24 border-y border-slate-200 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-slate-50 rounded-full blur-[100px] -z-10"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 border border-orange-200 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-4">
              Frictionless Gifting
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">Let Them Choose.</h2>
-          <p className="text-slate-500 text-base sm:text-lg leading-relaxed">
+          <p className="text-slate-500 text-base sm:text-lg leading-relaxed font-medium">
             Don't guess their sizes or preferences. You pick a budget tier, we send them a beautiful digital link, and they choose their perfect gift and enter their own address.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
           {collections.map((col) => (
-            <div key={col.id} className="relative flex flex-col bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm ring-1 ring-slate-900/5 hover:shadow-xl transition-all duration-300">
+            <div key={col.id} className="relative flex flex-col bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
               {col.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md z-10">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg z-10">
                   {col.badge}
                 </div>
               )}
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ring-1 ${col.color}`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ring-1 shadow-inner ${col.color}`}>
                 {col.icon}
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">{col.name}</h3>
               <div className="text-3xl font-black text-slate-900 mb-4">{col.price} <span className="text-sm text-slate-400 font-bold">/ gift</span></div>
-              <p className="text-slate-500 text-sm leading-relaxed mb-8 flex-1">{col.desc}</p>
+              <p className="text-slate-500 text-sm leading-relaxed mb-8 flex-1 font-medium">{col.desc}</p>
               
               <a 
                 href={getWhatsAppUrl(`Hi, I'm interested in sending "${col.name}" (${col.price}/gift) to my team using your Gift Links service. How does it work?`)}
                 target="_blank" rel="noreferrer"
-                className={`w-full h-12 flex items-center justify-center rounded-full text-white font-bold transition-all active:scale-95 shadow-lg ${col.btnColor}`}
+                className={`w-full h-14 flex items-center justify-center rounded-full text-white font-black transition-all active:scale-95 shadow-xl ${col.btnColor} relative overflow-hidden animate-shimmer`}
               >
-                Send this Collection
+                <span className="relative z-10">Send this Collection</span>
               </a>
             </div>
           ))}
@@ -631,9 +619,9 @@ function ProductCard({ gift, index }) {
     : `Hi, I'm interested in ${gift.name} delivered to our office.`;
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-[2rem] bg-white p-2 shadow-sm ring-1 ring-slate-900/5 transition-all hover:shadow-lg hover:ring-slate-900/10">
+    <article className="flex flex-col overflow-hidden rounded-[2rem] bg-white p-2 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:border-slate-200 hover:-translate-y-1">
       <div className="relative aspect-square w-full bg-slate-50 rounded-[1.5rem] p-6 flex items-center justify-center overflow-hidden group">
-        <span className="absolute top-4 left-4 bg-white text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-full uppercase z-10 shadow-sm border border-slate-100">{gift.badge || "Pick"}</span>
+        <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-full uppercase z-10 shadow-sm border border-slate-200">{gift.badge || "Pick"}</span>
         <img alt={gift.name} className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" loading="lazy" onError={(e) => { e.currentTarget.src = buildFallbackImageUrl(index); }} src={gift.imageUrl || buildFallbackImageUrl(index)} />
       </div>
       
@@ -642,11 +630,11 @@ function ProductCard({ gift, index }) {
           <p className="text-base font-bold leading-snug text-slate-900 line-clamp-2">{gift.name}</p>
         </div>
         
-        <div className="flex bg-slate-100 p-1 rounded-xl mb-4 relative z-10">
+        <div className="flex bg-slate-100/80 p-1.5 rounded-xl mb-4 relative z-10">
           <button 
             type="button"
             onClick={() => setDeliveryMethod("office")}
-            className={`flex-1 flex justify-center items-center gap-1.5 text-[10px] sm:text-xs font-bold py-2 rounded-lg transition-all ${deliveryMethod === 'office' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={`flex-1 flex justify-center items-center gap-1.5 text-[10px] sm:text-xs font-bold py-2.5 rounded-lg transition-all ${deliveryMethod === 'office' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             To Office
@@ -654,14 +642,14 @@ function ProductCard({ gift, index }) {
           <button 
             type="button"
             onClick={() => setDeliveryMethod("link")}
-            className={`flex-1 flex justify-center items-center gap-1.5 text-[10px] sm:text-xs font-bold py-2 rounded-lg transition-all ${deliveryMethod === 'link' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className={`flex-1 flex justify-center items-center gap-1.5 text-[10px] sm:text-xs font-bold py-2.5 rounded-lg transition-all ${deliveryMethod === 'link' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             Via Link
           </button>
         </div>
 
-        <a className={`flex h-12 items-center justify-center rounded-full text-sm font-bold transition-all active:scale-95 ${deliveryMethod === 'link' ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 ring-1 ring-orange-500/20' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`} href={getWhatsAppUrl(waMessage)} rel="noreferrer" target="_blank">
+        <a className={`flex h-12 items-center justify-center rounded-full text-sm font-black transition-all active:scale-95 ${deliveryMethod === 'link' ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 ring-1 ring-orange-500/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`} href={getWhatsAppUrl(waMessage)} rel="noreferrer" target="_blank">
           {deliveryMethod === 'link' ? "Send Links via WhatsApp" : "Request Quote"}
         </a>
       </div>
@@ -707,13 +695,13 @@ function FomoNotification() {
   if (!notification) return null;
 
   return (
-    <div className={`fixed bottom-28 left-4 md:bottom-8 md:left-8 z-50 max-w-xs bg-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-slate-100 flex items-start gap-3 transition-all duration-500 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+    <div className={`fixed bottom-28 left-4 md:bottom-8 md:left-8 z-50 max-w-xs bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 flex items-start gap-3 transition-all duration-500 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0 ring-4 ring-green-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
       </div>
       <div>
         <p className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">{notification}</p>
-        <p className="text-[10px] text-slate-400 font-semibold mt-1">Just now • Verified Inquiry</p>
+        <p className="text-[10px] text-slate-400 font-bold mt-1">Just now • Verified Inquiry</p>
       </div>
     </div>
   );
@@ -732,37 +720,37 @@ function ExitIntentModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-slide-up">
-      <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 max-w-lg w-full relative shadow-2xl overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-slide-up">
+      <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 max-w-lg w-full relative shadow-2xl overflow-hidden border border-white/20">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-500"></div>
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors bg-slate-50 rounded-full p-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
 
         {!submitted ? (
           <>
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-orange-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-orange-100 shadow-inner">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             </div>
             <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Leaving so soon?</h2>
-            <p className="text-slate-500 mb-8 leading-relaxed">
+            <p className="text-slate-500 mb-8 leading-relaxed font-medium">
               Don't leave without our exclusive <strong>2026 Corporate Gifts Catalog</strong>. Drop your email to get the PDF instantly.
             </p>
             <form onSubmit={handleDownload} className="space-y-4">
-              <input type="email" placeholder="Your Work Email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-semibold outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
-              <button type="submit" className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black transition-all active:scale-95 shadow-md">
-                Download Free Catalog
+              <input type="email" placeholder="Your Work Email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-5 font-bold outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
+              <button type="submit" className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl relative overflow-hidden animate-shimmer">
+                <span className="relative z-10">Download Free Catalog</span>
               </button>
             </form>
-            <p className="text-center text-[10px] text-slate-400 mt-4 font-semibold uppercase tracking-wider">No spam. Only premium gifts.</p>
+            <p className="text-center text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-wider">No spam. Only premium gifts.</p>
           </>
         ) : (
           <div className="text-center py-8">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <div className="w-20 h-20 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-green-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <h2 className="text-2xl font-black text-slate-900 mb-2">Check your WhatsApp!</h2>
-            <p className="text-slate-500">We are opening a chat to send the 2026 PDF directly to you.</p>
+            <p className="text-slate-500 font-medium">We are opening a chat to send the 2026 PDF directly to you.</p>
           </div>
         )}
       </div>
@@ -795,26 +783,27 @@ function KitBuilder() {
   return (
     <section id="kit-builder" className="w-full bg-slate-900 text-white py-16 sm:py-24 overflow-hidden relative">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-12 text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-400 border border-orange-500/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-4">
              Interactive
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-4">Build Your Welcome Kit</h2>
-          <p className="text-slate-400 text-base sm:text-lg">Mix and match items to create the perfect bundle for your employees or clients.</p>
+          <p className="text-slate-400 text-base sm:text-lg font-medium">Mix and match items to create the perfect bundle for your employees or clients.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div className="space-y-6">
             {categories.map(cat => (
-              <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-[2rem] p-6">
+              <div key={cat.id} className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-[2rem] p-6 shadow-inner">
                 <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4">{cat.name}</h3>
                 <div className="flex flex-wrap gap-3">
                   {cat.items.map(item => {
                     const isSelected = selectedItems[cat.id] === item;
                     return (
-                      <button key={item} onClick={() => handleSelect(cat.id, item)} className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all ${isSelected ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 border border-orange-400' : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-white'}`}>
+                      <button key={item} onClick={() => handleSelect(cat.id, item)} className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${isSelected ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.3)] border border-orange-400 scale-105' : 'bg-slate-900/50 text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-white hover:bg-slate-800'}`}>
                         {isSelected && <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-1.5 -mt-0.5"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                         {item}
                       </button>
@@ -825,30 +814,32 @@ function KitBuilder() {
             ))}
           </div>
 
-          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 text-slate-900 flex flex-col items-center justify-center text-center shadow-2xl">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 bg-slate-50 rounded-full border-8 border-slate-100 flex items-center justify-center mb-8 relative">
+          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 text-slate-900 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)]">
+            <div className="w-32 h-32 sm:w-40 sm:h-40 bg-slate-50 rounded-full border-8 border-slate-100 flex items-center justify-center mb-8 relative shadow-inner">
                <span className="text-4xl sm:text-5xl font-black text-slate-300">{selectedCount}</span>
-               <div className="absolute -bottom-4 bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md">
+               <div className="absolute -bottom-4 bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg border border-slate-700">
                  Items Selected
                </div>
             </div>
             
             <h3 className="text-2xl font-black mb-3">Your Custom Bundle</h3>
-            <p className="text-slate-500 mb-6 min-h-[48px] text-sm sm:text-base font-semibold">
+            <p className="text-slate-500 mb-6 min-h-[48px] text-sm sm:text-base font-medium">
               {selectedCount > 0 ? buildSummary : "Select items from the left to start building your kit."}
             </p>
 
-            <div className="w-full flex bg-slate-100 p-1.5 rounded-2xl mb-6">
-              <button onClick={() => setDeliveryMethod("office")} className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all ${deliveryMethod === 'office' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Ship Bulk to Office</button>
-              <button onClick={() => setDeliveryMethod("link")} className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${deliveryMethod === 'link' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-700'}`}>
+            <div className="w-full flex bg-slate-100/80 p-1.5 rounded-xl mb-6">
+              <button onClick={() => setDeliveryMethod("office")} className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${deliveryMethod === 'office' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>Ship Bulk to Office</button>
+              <button onClick={() => setDeliveryMethod("link")} className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${deliveryMethod === 'link' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-700'}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                 Send via Links
               </button>
             </div>
 
-            <a href={getWhatsAppUrl(waMessage)} target="_blank" rel="noreferrer" className={`w-full h-14 rounded-full font-black flex items-center justify-center gap-2 transition-all shadow-lg ${selectedCount > 0 ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/30 active:scale-95' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
-              Get Pricing For This Kit
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            <a href={getWhatsAppUrl(waMessage)} target="_blank" rel="noreferrer" className={`w-full h-14 rounded-xl font-black flex items-center justify-center gap-2 transition-all shadow-xl relative overflow-hidden ${selectedCount > 0 ? 'bg-orange-500 text-white hover:bg-orange-600 animate-shimmer active:scale-95' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
+              <span className="relative z-10 flex items-center gap-2">
+                Get Pricing For This Kit
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </span>
             </a>
           </div>
 
@@ -891,29 +882,30 @@ function PremiumCollection({ products }) {
   }
 
   return (
-    <section id="premium" className="w-full bg-slate-50 py-16 sm:py-20 border-t border-slate-200 overflow-hidden">
-      <div className="px-4 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 sm:px-6 lg:px-8 gap-4">
+    <section id="premium" className="w-full bg-slate-50 py-16 sm:py-20 border-t border-slate-200 overflow-hidden relative">
+      <div className="absolute inset-0 bg-noise opacity-50 mix-blend-overlay pointer-events-none"></div>
+      <div className="px-4 max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 sm:px-6 lg:px-8 gap-4 relative z-10">
         <div>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
              Premium Curations
-             <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
+             <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse ring-4 ring-orange-500/20"></span>
           </h2>
-          <p className="text-base text-slate-500 mt-2">Executive gifts designed to leave a lasting impression.</p>
+          <p className="text-base text-slate-500 mt-2 font-medium">Executive gifts designed to leave a lasting impression.</p>
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all duration-500 transform ${isFading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all duration-500 transform relative z-10 ${isFading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         {visibleProducts.map((item, idx) => (
-          <div key={`premium-${item.uniqueId}-${idx}`} className="bg-white rounded-[2rem] p-3 sm:p-4 shadow-sm ring-1 ring-slate-900/5 transition-all duration-300 group hover:shadow-xl hover:ring-slate-900/10 flex flex-col">
+          <div key={`premium-${item.uniqueId}-${idx}`} className="bg-white rounded-[2rem] p-3 sm:p-4 shadow-sm border border-slate-100 transition-all duration-300 group hover:shadow-xl hover:-translate-y-1 flex flex-col">
             <div className="relative aspect-[4/5] bg-slate-50 rounded-[1.5rem] overflow-hidden mb-4 p-6 flex items-center justify-center">
-              <div className="absolute top-4 left-4 bg-yellow-400 text-yellow-950 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest z-10">Premium</div>
+              <div className="absolute top-4 left-4 bg-yellow-400 text-yellow-950 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest z-10 shadow-sm">Premium</div>
               <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out" onError={(e) => { e.target.src = buildFallbackImageUrl(item.id); }} />
             </div>
             <div className="px-2 flex-1 flex flex-col">
               <h3 className="font-bold text-base sm:text-lg leading-snug line-clamp-2 text-slate-900 mb-2">{item.name}</h3>
               <div className="mt-auto pt-4">
-                <a href={getWhatsAppUrl(`Hi, I'm interested in the premium ${item.name}`)} target="_blank" rel="noreferrer" className="flex items-center justify-center w-full h-12 bg-slate-900 text-white text-sm rounded-full font-bold transition-all active:scale-95 hover:bg-slate-800">
-                  Inquire Now
+                <a href={getWhatsAppUrl(`Hi, I'm interested in the premium ${item.name}`)} target="_blank" rel="noreferrer" className="flex items-center justify-center w-full h-12 bg-slate-900 text-white text-sm rounded-xl font-bold transition-all active:scale-95 hover:bg-slate-800 relative overflow-hidden group-hover:animate-shimmer">
+                  <span className="relative z-10">Inquire Now</span>
                 </a>
               </div>
             </div>
@@ -948,13 +940,13 @@ function LiveCatalog({ products }) {
       <div className="mx-auto mb-6 sm:mb-8 flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
            Live Catalog
-           <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+           <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse ring-4 ring-blue-500/20"></span>
         </h2>
       </div>
       
       <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 transition-all duration-700 ${isFading ? 'opacity-0 scale-[0.98]' : 'opacity-100 scale-100'}`}>
         {visibleProducts.map((product, idx) => (
-          <article className="shrink-0 overflow-hidden rounded-[2rem] bg-white ring-1 ring-slate-900/5 p-2 shadow-sm hover:shadow-md transition-shadow" key={`catalog-${product?.uniqueId || "placeholder"}-${idx}`}>
+          <article className="shrink-0 overflow-hidden rounded-[2rem] bg-white border border-slate-100 p-2 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all" key={`catalog-${product?.uniqueId || "placeholder"}-${idx}`}>
             <div className="aspect-[4/3] w-full bg-slate-50/50 rounded-[1.5rem] p-4 flex items-center justify-center">
                <img alt={product?.name || "Catalog product"} className="w-full h-full object-contain mix-blend-multiply" onError={(e) => { e.currentTarget.src = buildFallbackImageUrl(idx); }} src={product?.imageUrl || buildFallbackImageUrl(idx)} />
             </div>
@@ -986,14 +978,15 @@ function BulkEstimator() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl relative p-6 sm:p-12 lg:p-16">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none" />
+      <div className="rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl relative p-6 sm:p-12 lg:p-16 border border-slate-800">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] pointer-events-none animate-blob" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none animate-blob animation-delay-2000" />
+        <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay pointer-events-none"></div>
 
         <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_400px]">
           <div className="flex flex-col justify-center">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">Estimate Volume Savings</h2>
-            <p className="text-slate-400 text-sm sm:text-base mb-10">Slide to adjust your team size and see your wholesale perks unlock instantly.</p>
+            <p className="text-slate-400 text-sm sm:text-base mb-10 font-medium">Slide to adjust your team size and see your wholesale perks unlock instantly.</p>
 
             <div className="space-y-8">
               <div>
@@ -1026,7 +1019,7 @@ function BulkEstimator() {
                   {perks.map((perk, i) => {
                     const isUnlocked = teamSize >= perk.threshold;
                     return (
-                      <div key={i} className={`p-3 rounded-2xl border transition-all duration-500 ${isUnlocked ? 'bg-orange-500/10 border-orange-500/30 text-orange-400 scale-105' : 'bg-slate-800/50 border-slate-700/50 text-slate-600'}`}>
+                      <div key={i} className={`p-3 rounded-2xl border transition-all duration-500 ${isUnlocked ? 'bg-orange-500/10 border-orange-500/30 text-orange-400 scale-105 shadow-[0_0_15px_rgba(249,115,22,0.15)]' : 'bg-slate-800/50 border-slate-700/50 text-slate-600'}`}>
                         <div className="flex items-center gap-2 mb-2">
                           {isUnlocked ? (
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -1044,29 +1037,33 @@ function BulkEstimator() {
             </div>
           </div>
 
-          <div className="bg-slate-800/80 backdrop-blur-md rounded-[2rem] p-8 border border-slate-700/50 flex flex-col items-center justify-center text-center shadow-xl">
-             <div className="bg-orange-500/10 text-orange-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-orange-500/20">
+          <div className="bg-slate-800/60 backdrop-blur-md rounded-[2rem] p-8 border border-slate-700/50 flex flex-col items-center justify-center text-center shadow-xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl"></div>
+             
+             <div className="bg-orange-500/10 text-orange-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-orange-500/20 relative z-10">
                Tier {discount === 10 ? "4" : discount === 5 ? "3" : discount === 2 ? "2" : "1"} Unlocked
              </div>
              
-             <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">You Save Approx</p>
-             <h3 className="text-5xl sm:text-6xl font-black text-white mb-2">
+             <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2 relative z-10">You Save Approx</p>
+             <h3 className="text-5xl sm:text-6xl font-black text-white mb-2 relative z-10">
                ₹{savings.toLocaleString()}
              </h3>
-             <p className="text-orange-400 font-bold mb-8 text-lg">({discount}% Volume Discount)</p>
+             <p className="text-orange-400 font-bold mb-8 text-lg relative z-10">({discount}% Volume Discount)</p>
              
-             <div className="w-full space-y-3">
+             <div className="w-full space-y-3 relative z-10">
                <a 
                  href={getWhatsAppUrl(prefilledMessage)} 
                  target="_blank" 
                  rel="noreferrer" 
-                 className="w-full flex items-center justify-center gap-2 h-14 bg-orange-500 text-white rounded-full font-black text-base transition-all active:scale-95 hover:bg-orange-400 shadow-lg shadow-orange-500/25"
+                 className="w-full flex items-center justify-center gap-2 h-14 bg-orange-500 text-white rounded-xl font-black text-base transition-all active:scale-95 hover:bg-orange-400 shadow-lg shadow-orange-500/25 relative overflow-hidden animate-shimmer"
                >
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                 Claim {discount}% Off
+                 <span className="relative z-10 flex items-center gap-2">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                   Claim {discount}% Off
+                 </span>
                </a>
              </div>
-             <p className="text-xs text-slate-500 mt-4 font-semibold">Message pre-filled with your requirements.</p>
+             <p className="text-xs text-slate-500 mt-4 font-semibold relative z-10">Message pre-filled with your requirements.</p>
           </div>
 
         </div>
@@ -1089,9 +1086,10 @@ function GiftSearchForm({ canSubmit, input, isLoading, onChange, onSubmit, varia
             id={isSticky ? "sticky-gift-brief" : "gift-brief"}
             type="text"
             placeholder={isSticky ? "Search gifts..." : giftInputPlaceholder}
-            className={`w-full min-w-0 border bg-white/90 backdrop-blur-sm font-semibold text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
-              isSticky ? "h-14 rounded-full pl-12 pr-4 text-base border-slate-200" : "h-14 sm:h-16 rounded-full pl-12 sm:pl-14 pr-5 text-base sm:text-lg border-slate-200 shadow-sm"
+            className={`w-full min-w-0 bg-transparent font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:ring-0 ${
+              isSticky ? "h-14 rounded-full pl-12 pr-4 text-base" : "h-14 sm:h-16 rounded-full pl-12 sm:pl-14 pr-5 text-base sm:text-lg"
             }`}
+            style={{ border: 'none', boxShadow: 'none' }}
             value={input}
             onChange={(event) => onChange(event.target.value)}
             onFocus={onFocus}
@@ -1110,8 +1108,10 @@ function GiftSearchForm({ canSubmit, input, isLoading, onChange, onSubmit, varia
             </ul>
           )}
         </div>
-        <button className={`shrink-0 flex items-center justify-center bg-orange-500 text-white font-black transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 hover:bg-orange-600 ${isSticky ? "h-14 w-14 rounded-full" : "w-full sm:w-auto h-14 sm:h-16 px-8 rounded-full shadow-lg shadow-orange-500/20 text-base"}`} disabled={!canSubmit} type="submit">
-          {isLoading ? <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : isSticky ? <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg> : "Find Gifts"}
+        <button className={`shrink-0 flex items-center justify-center bg-orange-500 text-white font-black transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 hover:bg-orange-600 relative overflow-hidden animate-shimmer ${isSticky ? "h-14 w-14 rounded-full" : "w-full sm:w-auto h-14 sm:h-16 px-8 rounded-full shadow-lg shadow-orange-500/30 text-base"}`} disabled={!canSubmit} type="submit">
+          <span className="relative z-10 flex items-center justify-center">
+            {isLoading ? <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : isSticky ? <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg> : "Find Gifts"}
+          </span>
         </button>
       </div>
     </form>
@@ -1192,7 +1192,7 @@ function Footer() {
                 <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad<br />India</span>
               </p>
               <div className="h-px w-full bg-slate-700/50 my-2"></div>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919990093697"><span className="font-bold">+91 98716 21921</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919871621921"><span className="font-bold">+91 98716 21921</span></a>
               <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:vishal.giftszone@gmail.com"><span className="font-bold">vishal.giftszone@gmail.com</span></a>
             </div>
           </div>
