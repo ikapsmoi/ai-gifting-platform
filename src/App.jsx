@@ -12,10 +12,39 @@ function getWhatsAppUrl(message = "") {
   return `https://wa.me/${targetNumber}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
 }
 
+// --- Make.com Lead Tracking Bridge ---
+function handleWhatsAppClick(event, message = "") {
+  if (event) {
+    event.preventDefault(); // Stop standard link behavior
+  }
+
+  // 1. Send the intent to Make.com Webhook
+  // REPLACE THE URL BELOW with your actual Make.com Webhook URL
+  fetch('https://hook.eu1.make.com/elvplfnk81iihfusqv5ccge57cx6qy54', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      intent: message || "General Site Inquiry"
+    })
+  }).catch(err => console.error("Webhook failed silently", err));
+
+  // 2. Open WhatsApp for the user
+  window.open(getWhatsAppUrl(message), '_blank', 'noopener,noreferrer');
+}
+
+// UPGRADED: 10+ Popular Searches for the empty-state dropdown
 const popularHrSearches = [
-  "Welcome kits", "Eco friendly", "Premium bags", 
-  "Bluetooth speakers", "Drinkware sets", "Tech gadgets", 
-  "Diwali hampers", "Onboarding boxes", "Award trophies"
+  "Welcome kits for new joiners",
+  "Eco-friendly corporate gifts",
+  "Premium laptop backpacks",
+  "Bluetooth speakers under 2000",
+  "Luxury drinkware gift sets",
+  "Tech gadgets for executives",
+  "Diwali gift hampers",
+  "Award trophies and plaques",
+  "Customized smart diaries",
+  "Wellness and self-care hampers"
 ];
 
 const animatedHeroWords = ["teams", "clients", "partners", "employees"];
@@ -189,9 +218,8 @@ export default function App() {
       const q = val.toLowerCase();
       const matches = allProducts.filter(p => p.name.toLowerCase().includes(q)).map(p => p.name);
       setSuggestions(Array.from(new Set(matches)).slice(0, 5));
-      setShowSuggestions(true);
     } else {
-      setShowSuggestions(false);
+      setSuggestions([]);
     }
     if (typingTimeout) clearTimeout(typingTimeout);
     setTypingTimeout(setTimeout(() => {
@@ -286,6 +314,10 @@ export default function App() {
         .stagger-1 { animation-delay: 100ms; }
         .stagger-2 { animation-delay: 200ms; }
         .stagger-3 { animation-delay: 300ms; }
+
+        /* Scrollbar Hide for suggestions dropdown */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
       {/* HEADER */}
@@ -308,9 +340,8 @@ export default function App() {
           </div>
           <a
             className="flex items-center justify-center h-10 sm:h-12 px-5 sm:px-6 rounded-full bg-slate-900 text-xs sm:text-sm font-bold text-white shadow-md active:scale-95 transition-all hover:bg-slate-800"
-            href={getWhatsAppUrl()}
-            rel="noreferrer"
-            target="_blank"
+            href="#"
+            onClick={(e) => handleWhatsAppClick(e, "General Header Inquiry")}
           >
             Contact
           </a>
@@ -334,7 +365,7 @@ export default function App() {
         <div className="relative z-20 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-12 pt-12 sm:px-6 sm:py-20 grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
           <div className="w-full flex flex-col items-start min-w-0 animate-slide-up">
             
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-black tracking-wide text-slate-700 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-105">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-black tracking-wide text-slate-700 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-105">
               <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse ring-4 ring-green-500/20"></span>
               AI-Powered Corporate Gifting
             </div>
@@ -347,11 +378,58 @@ export default function App() {
               </span> will love.
             </h1>
 
-            <div className="mt-4 mb-10 w-full max-w-2xl flex flex-col gap-5 min-w-0">
-              <p className="text-lg sm:text-xl leading-relaxed text-slate-600 font-medium max-w-lg">
-                Frictionless corporate gifting.
-              </p>
-              <div className="flex flex-wrap gap-3 sm:gap-4">
+            <p className="mt-4 mb-8 text-lg sm:text-xl leading-relaxed text-slate-600 font-medium max-w-lg">
+              Perfect gifts, instantly curated.
+            </p>
+
+            {/* UPGRADE: MOVED SEARCH BAR HIGHER & INCREASED Z-INDEX */}
+            <div className="w-full max-w-2xl min-w-0 stagger-1 mb-8 relative z-50" ref={heroSearchRef}>
+              <div className="p-2 sm:p-3 bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-white/80">
+                <GiftSearchForm
+                  canSubmit={canSubmit}
+                  input={input}
+                  isLoading={isLoading}
+                  onChange={handleInputChange}
+                  onSubmit={handleFormSubmit}
+                  variant="hero"
+                  suggestions={suggestions}
+                  defaultSuggestions={popularHrSearches} // Pass the 10 items here
+                  showSuggestions={showSuggestions}
+                  onSuggestionClick={handleSuggestionClick}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                />
+              </div>
+            </div>
+
+            {/* UPGRADE: Reordered Tags and Trust Metrics below the search */}
+            <div className="flex flex-col gap-6 w-full stagger-2 relative z-10">
+              
+              {/* Filter Tags */}
+              <div className="w-full">
+                 <p className="mb-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
+                   Or browse by popular tags
+                 </p>
+                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1 pb-1 scrollbar-hide">
+                   {uniqueWords.slice(0, 15).map(word => (
+                      <button
+                        key={word}
+                        onClick={() => toggleWord(word)}
+                        type="button"
+                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all active:scale-95 backdrop-blur-md border ${
+                          selectedWords.includes(word) 
+                          ? "bg-slate-900 text-white shadow-lg border-slate-900 ring-2 ring-slate-900 ring-offset-2 ring-offset-transparent" 
+                          : "bg-white/80 text-slate-600 border-white/60 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] hover:shadow-md hover:-translate-y-0.5"
+                        }`}
+                      >
+                        {word}
+                      </button>
+                   ))}
+                 </div>
+              </div>
+
+              {/* Trust Metrics */}
+              <div className="flex flex-wrap gap-3 sm:gap-4 mt-2">
                 {trustMetrics.map((metric, i) => {
                   const isActive = heroWordIndex === i;
                   return (
@@ -369,67 +447,11 @@ export default function App() {
                   );
                 })}
               </div>
-            </div>
 
-            <div className="mb-8 w-full stagger-1">
-               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1 pb-1 scrollbar-hide">
-                 {uniqueWords.slice(0, 15).map(word => (
-                    <button
-                      key={word}
-                      onClick={() => toggleWord(word)}
-                      type="button"
-                      className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all active:scale-95 backdrop-blur-md border ${
-                        selectedWords.includes(word) 
-                        ? "bg-slate-900 text-white shadow-lg border-slate-900 ring-2 ring-slate-900 ring-offset-2 ring-offset-transparent" 
-                        : "bg-white/80 text-slate-600 border-white/60 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] hover:shadow-md hover:-translate-y-0.5"
-                      }`}
-                    >
-                      {word}
-                    </button>
-                 ))}
-               </div>
-            </div>
-
-            {/* Heavy Lift Drop Shadow on Search Form */}
-            <div className="w-full max-w-2xl min-w-0 stagger-2" ref={heroSearchRef}>
-              <div className="p-2 sm:p-3 bg-white/60 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-white/80">
-                <GiftSearchForm
-                  canSubmit={canSubmit}
-                  input={input}
-                  isLoading={isLoading}
-                  onChange={handleInputChange}
-                  onSubmit={handleFormSubmit}
-                  variant="hero"
-                  suggestions={suggestions}
-                  showSuggestions={showSuggestions}
-                  onSuggestionClick={handleSuggestionClick}
-                  onFocus={() => input.trim().length > 1 && setShowSuggestions(true)}
-                  onBlur={() => setShowSuggestions(false)}
-                />
-              </div>
-            </div>
-
-            <div className="mt-8 w-full min-w-0 stagger-3">
-              <p className="mb-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
-                Trending Briefs
-              </p>
-              <div className="flex flex-wrap gap-2 pb-4">
-                {popularHrSearches.slice(0,4).map((brief) => (
-                  <button
-                    className="shrink-0 rounded-xl bg-white/70 backdrop-blur-xl px-3 py-2 text-[10px] sm:text-xs font-bold text-slate-600 shadow-sm border border-white/60 transition-all active:scale-95 hover:shadow-md hover:bg-white hover:-translate-y-0.5 flex items-center justify-center gap-1.5 leading-tight"
-                    key={brief}
-                    onClick={() => { setInput(brief); executeSearch(brief, selectedWords); }}
-                    type="button"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-orange-400 shrink-0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span>{brief}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {error && (
-              <div className="mt-6 w-full rounded-2xl bg-red-50/90 backdrop-blur-md p-4 text-sm font-bold text-red-600 border border-red-100 flex items-center gap-3 shadow-lg">
+              <div className="mt-6 w-full rounded-2xl bg-red-50/90 backdrop-blur-md p-4 text-sm font-bold text-red-600 border border-red-100 flex items-center gap-3 shadow-lg relative z-10">
                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 {error}
               </div>
@@ -495,7 +517,7 @@ export default function App() {
             : 'translate-y-12 opacity-0 pointer-events-none'
         }`}
       >
-        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-[2.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/60">
+        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-[2.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/60 relative z-50">
           <GiftSearchForm
             canSubmit={canSubmit}
             input={input}
@@ -503,6 +525,12 @@ export default function App() {
             onChange={handleInputChange}
             onSubmit={handleFormSubmit}
             variant="sticky"
+            suggestions={suggestions}
+            defaultSuggestions={popularHrSearches}
+            showSuggestions={showSuggestions}
+            onSuggestionClick={handleSuggestionClick}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           />
         </div>
       </div>
@@ -514,7 +542,12 @@ export default function App() {
         <button onClick={scrollToBottom} className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg shadow-slate-200 ring-1 ring-slate-100 hover:text-slate-900 transition-all hover:scale-110 active:scale-95" title="Scroll to Bottom">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <a href={getWhatsAppUrl()} rel="noreferrer" target="_blank" className="hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-[#25D366]/40 hover:bg-[#20bd5a] transition-all hover:scale-110 active:scale-95 mt-2" title="Talk to expert">
+        <a 
+          href="#"
+          onClick={(e) => handleWhatsAppClick(e, "Floating button click")}
+          className="hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-[#25D366]/40 hover:bg-[#20bd5a] transition-all hover:scale-110 active:scale-95 mt-2" 
+          title="Talk to expert"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
         </a>
       </div>
@@ -524,7 +557,11 @@ export default function App() {
           <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Volume Orders (50+)</span>
           <span className="text-sm font-bold text-white">Get a Free Curation Call</span>
         </div>
-        <a href={getWhatsAppUrl("Hi, I need corporate gifts for 50+ people. Can I get a free curation call?")} target="_blank" rel="noreferrer" className="bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-md active:scale-95 transition-transform flex items-center gap-1.5">
+        <a 
+          href="#" 
+          onClick={(e) => handleWhatsAppClick(e, "Hi, I need corporate gifts for 50+ people. Can I get a free curation call?")}
+          className="bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-black shadow-md active:scale-95 transition-transform flex items-center gap-1.5"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
           Let's Talk
         </a>
@@ -597,8 +634,8 @@ function RecipientChoiceCollections() {
               <p className="text-slate-500 text-sm leading-relaxed mb-8 flex-1 font-medium">{col.desc}</p>
               
               <a 
-                href={getWhatsAppUrl(`Hi, I'm interested in sending "${col.name}" (${col.price}/gift) to my team using your Gift Links service. How does it work?`)}
-                target="_blank" rel="noreferrer"
+                href="#"
+                onClick={(e) => handleWhatsAppClick(e, `Hi, I'm interested in sending "${col.name}" (${col.price}/gift) to my team using your Gift Links service. How does it work?`)}
                 className={`w-full h-14 flex items-center justify-center rounded-full text-white font-black transition-all active:scale-95 shadow-xl ${col.btnColor} relative overflow-hidden animate-shimmer`}
               >
                 <span className="relative z-10">Send this Collection</span>
@@ -649,7 +686,11 @@ function ProductCard({ gift, index }) {
           </button>
         </div>
 
-        <a className={`flex h-12 items-center justify-center rounded-full text-sm font-black transition-all active:scale-95 ${deliveryMethod === 'link' ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 ring-1 ring-orange-500/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`} href={getWhatsAppUrl(waMessage)} rel="noreferrer" target="_blank">
+        <a 
+          className={`flex h-12 items-center justify-center rounded-full text-sm font-black transition-all active:scale-95 ${deliveryMethod === 'link' ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 ring-1 ring-orange-500/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`} 
+          href="#"
+          onClick={(e) => handleWhatsAppClick(e, waMessage)}
+        >
           {deliveryMethod === 'link' ? "Send Links via WhatsApp" : "Request Quote"}
         </a>
       </div>
@@ -715,7 +756,10 @@ function ExitIntentModal({ onClose }) {
     e.preventDefault();
     setSubmitted(true);
     const waMessage = `Hi, please send the 2026 Corporate Gifts Catalog to my email: ${email}`;
-    window.open(`https://wa.me/919871621921?text=${encodeURIComponent(waMessage)}`, '_blank');
+    
+    // Using our global handler and passing null for event since we already prevented default
+    handleWhatsAppClick(null, waMessage); 
+    
     setTimeout(onClose, 3500);
   };
 
@@ -835,7 +879,11 @@ function KitBuilder() {
               </button>
             </div>
 
-            <a href={getWhatsAppUrl(waMessage)} target="_blank" rel="noreferrer" className={`w-full h-14 rounded-xl font-black flex items-center justify-center gap-2 transition-all shadow-xl relative overflow-hidden ${selectedCount > 0 ? 'bg-orange-500 text-white hover:bg-orange-600 animate-shimmer active:scale-95' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
+            <a 
+              href="#" 
+              onClick={(e) => selectedCount > 0 ? handleWhatsAppClick(e, waMessage) : e.preventDefault()} 
+              className={`w-full h-14 rounded-xl font-black flex items-center justify-center gap-2 transition-all shadow-xl relative overflow-hidden ${selectedCount > 0 ? 'bg-orange-500 text-white hover:bg-orange-600 animate-shimmer active:scale-95' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}
+            >
               <span className="relative z-10 flex items-center gap-2">
                 Get Pricing For This Kit
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -904,7 +952,11 @@ function PremiumCollection({ products }) {
             <div className="px-2 flex-1 flex flex-col">
               <h3 className="font-bold text-base sm:text-lg leading-snug line-clamp-2 text-slate-900 mb-2">{item.name}</h3>
               <div className="mt-auto pt-4">
-                <a href={getWhatsAppUrl(`Hi, I'm interested in the premium ${item.name}`)} target="_blank" rel="noreferrer" className="flex items-center justify-center w-full h-12 bg-slate-900 text-white text-sm rounded-xl font-bold transition-all active:scale-95 hover:bg-slate-800 relative overflow-hidden group-hover:animate-shimmer">
+                <a 
+                  href="#" 
+                  onClick={(e) => handleWhatsAppClick(e, `Hi, I'm interested in the premium ${item.name}`)}
+                  className="flex items-center justify-center w-full h-12 bg-slate-900 text-white text-sm rounded-xl font-bold transition-all active:scale-95 hover:bg-slate-800 relative overflow-hidden group-hover:animate-shimmer"
+                >
                   <span className="relative z-10">Inquire Now</span>
                 </a>
               </div>
@@ -1052,9 +1104,8 @@ function BulkEstimator() {
              
              <div className="w-full space-y-3 relative z-10">
                <a 
-                 href={getWhatsAppUrl(prefilledMessage)} 
-                 target="_blank" 
-                 rel="noreferrer" 
+                 href="#" 
+                 onClick={(e) => handleWhatsAppClick(e, prefilledMessage)}
                  className="w-full flex items-center justify-center gap-2 h-14 bg-orange-500 text-white rounded-xl font-black text-base transition-all active:scale-95 hover:bg-orange-400 shadow-lg shadow-orange-500/25 relative overflow-hidden animate-shimmer"
                >
                  <span className="relative z-10 flex items-center gap-2">
@@ -1072,8 +1123,9 @@ function BulkEstimator() {
   );
 }
 
-function GiftSearchForm({ canSubmit, input, isLoading, onChange, onSubmit, variant, suggestions, showSuggestions, onSuggestionClick, onFocus, onBlur }) {
+function GiftSearchForm({ canSubmit, input, isLoading, onChange, onSubmit, variant, suggestions, defaultSuggestions = [], showSuggestions, onSuggestionClick, onFocus, onBlur }) {
   const isSticky = variant === "sticky";
+  const displaySuggestions = input.trim().length > 1 ? suggestions : defaultSuggestions;
 
   return (
     <form className={`relative w-full min-w-0 ${isSticky ? "flex items-center" : ""}`} id={isSticky ? "sticky-ai-gifting" : "ai-gifting"} onSubmit={onSubmit}>
@@ -1097,11 +1149,22 @@ function GiftSearchForm({ canSubmit, input, isLoading, onChange, onSubmit, varia
             autoComplete="off"
           />
           
-          {showSuggestions && suggestions?.length > 0 && (
-            <ul className="absolute left-0 right-0 bottom-full mb-3 sm:bottom-auto sm:top-full sm:mt-3 z-50 rounded-[1.5rem] border border-slate-100 bg-white/95 backdrop-blur-xl shadow-2xl overflow-hidden py-2">
-              {suggestions.map((sug, index) => (
-                <li key={`${sug}-${index}`} onMouseDown={(e) => { e.preventDefault(); onSuggestionClick(sug); }} className="px-5 py-3.5 text-sm font-bold text-slate-600 cursor-pointer hover:bg-slate-50 hover:text-orange-500 transition-colors flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
+          {/* UPGRADED SUGGESTION DROPDOWN */}
+          {showSuggestions && displaySuggestions?.length > 0 && (
+            <ul className={`absolute left-0 right-0 z-[100] max-h-72 overflow-y-auto rounded-[1.5rem] border border-slate-100 bg-white/95 backdrop-blur-xl shadow-2xl py-2 scrollbar-hide ${isSticky ? 'bottom-full mb-3' : 'top-full mt-3'}`}>
+              {/* Show Empty State Header */}
+              {input.trim().length <= 1 && (
+                <li className="px-5 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50 mb-1">
+                  Trending Searches — Or type your own brief
+                </li>
+              )}
+              {displaySuggestions.map((sug, index) => (
+                <li 
+                  key={`${sug}-${index}`} 
+                  onMouseDown={(e) => { e.preventDefault(); onSuggestionClick(sug); }} 
+                  className="px-5 py-3 text-sm font-bold text-slate-600 cursor-pointer hover:bg-slate-50 hover:text-orange-500 transition-colors flex items-center gap-3 border-b border-slate-50 last:border-0"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-orange-400 shrink-0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                   <span className="truncate">{sug}</span>
                 </li>
               ))}
