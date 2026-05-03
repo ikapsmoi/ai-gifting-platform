@@ -1255,7 +1255,7 @@ function Footer() {
                 <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad<br />India</span>
               </p>
               <div className="h-px w-full bg-slate-700/50 my-2"></div>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919871621921"><span className="font-bold">+91 98716 21921</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919990093697"><span className="font-bold">+91 9990093697</span></a>
               <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:vishal.giftszone@gmail.com"><span className="font-bold">vishal.giftszone@gmail.com</span></a>
             </div>
           </div>
