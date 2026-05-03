@@ -4,7 +4,7 @@ import productsData from "./data/transformed_products.json";
 // --- UPGRADE: WhatsApp Dual-Number Lead Splitter ---
 const SALES_NUMBERS = [
   "919871621921", // Number 1 (Vishal)
-  "919990093697"  // <-- REPLACE THIS WITH YOUR SECOND NUMBER
+  "919990093697"  // Number 2
 ];
 
 function getWhatsAppUrl(message = "") {
@@ -586,9 +586,22 @@ function FomoNotification() {
   );
 }
 
-// --- UPGRADE 2: EXIT INTENT MODAL ---
+// --- UPGRADE 2: EXIT INTENT MODAL (WITH WHATSAPP PIVOT) ---
 function ExitIntentModal({ onClose }) {
+  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const handleDownload = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    
+    // The ultimate growth hack: Force the user to send their email via WhatsApp.
+    // This gives you BOTH their Work Email and their active WhatsApp Number instantly.
+    const waMessage = `Hi, please send the 2026 Corporate Gifts Catalog to my email: ${email}`;
+    window.open(`https://wa.me/919871621921?text=${encodeURIComponent(waMessage)}`, '_blank');
+
+    setTimeout(onClose, 3500);
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-slide-up">
@@ -605,10 +618,17 @@ function ExitIntentModal({ onClose }) {
             </div>
             <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Leaving so soon?</h2>
             <p className="text-slate-500 mb-8 leading-relaxed">
-              Don't leave without our exclusive <strong>2026 Corporate Gifts Catalog</strong>. Drop your email and we'll send the PDF instantly.
+              Don't leave without our exclusive <strong>2026 Corporate Gifts Catalog</strong>. Drop your email to get the PDF instantly.
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); setTimeout(onClose, 2500); }} className="space-y-4">
-              <input type="email" placeholder="Your Work Email" required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-semibold outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" />
+            <form onSubmit={handleDownload} className="space-y-4">
+              <input 
+                type="email" 
+                placeholder="Your Work Email" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-semibold outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" 
+              />
               <button type="submit" className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black transition-all active:scale-95 shadow-md">
                 Download Free Catalog
               </button>
@@ -620,8 +640,8 @@ function ExitIntentModal({ onClose }) {
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2">Check your inbox!</h2>
-            <p className="text-slate-500">The 2026 PDF catalog is on its way to you.</p>
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Check your WhatsApp!</h2>
+            <p className="text-slate-500">We are opening a chat to send the 2026 PDF directly to you.</p>
           </div>
         )}
       </div>
@@ -922,7 +942,6 @@ function BulkEstimator() {
             </div>
           </div>
 
-          {/* UPGRADE 4: (Added CTA functionality to existing Estimator box) */}
           <div className="bg-slate-800/80 backdrop-blur-md rounded-[2rem] p-8 border border-slate-700/50 flex flex-col items-center justify-center text-center shadow-xl">
              <div className="bg-orange-500/10 text-orange-400 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-orange-500/20">
                Tier {discount === 10 ? "4" : discount === 5 ? "3" : discount === 2 ? "2" : "1"} Unlocked
@@ -1092,10 +1111,10 @@ function Footer() {
             <div className="grid gap-4 text-base text-slate-300">
               <p className="flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 shrink-0 mt-0.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad<br />India</span>
+                <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad<br />PAN NUMBER AMBPG5988N, GST NUMBER 09AMBPG5988N1ZB<br />India</span>
               </p>
               <div className="h-px w-full bg-slate-700/50 my-2"></div>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919990093697"><span className="font-bold">+91 98716 21921</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919871621921"><span className="font-bold">+91 98716 21921</span></a>
               <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:vishal.giftszone@gmail.com"><span className="font-bold">vishal.giftszone@gmail.com</span></a>
             </div>
           </div>
