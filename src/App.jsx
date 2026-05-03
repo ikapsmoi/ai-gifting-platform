@@ -714,10 +714,10 @@ function FomoNotification() {
 
   const events = useMemo(() => [
     "An HR Manager in Delhi requested a quote for 250 Welcome Kits.",
-    "A Startup in Bangalore sent the $50 Choice Collection.",
-    "An Admin in Mumbai claimed the 15% Volume Discount.",
+    "A Startup in Bangalore sent the 1500 Choice Collection.",
+    "An Admin in Noida claimed the 10% Volume Discount.",
     "A Tech Company in Pune ordered 500 Corporate Hoodies.",
-    "A Marketing Head in Gurgaon downloaded the 2026 Catalog."
+    "A Marketing Head in Gurgaon Claimed the 5% Volume Discount."
   ], []);
 
   useEffect(() => {
