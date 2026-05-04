@@ -6,8 +6,10 @@
   "scripts": {
     "api": "node server.js",
     "dev": "vite",
-    "build": "vite build",
+    "build": "node generate-sitemap.js && vite build",
     "preview": "vite preview"
+
+    
   },
   "dependencies": {
     "react": "^19.0.0",
