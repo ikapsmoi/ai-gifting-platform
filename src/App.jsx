@@ -35,16 +35,16 @@ function handleWhatsAppClick(event, message = "") {
 
 // UPGRADED: 10+ Popular Searches for the empty-state dropdown
 const popularHrSearches = [
-  "Welcome kits for new joiners",
-  "Eco-friendly corporate gifts",
-  "Premium laptop backpacks",
-  "Bluetooth speakers under 2000",
-  "Luxury drinkware gift sets",
-  "Tech gadgets for executives",
-  "Diwali gift hampers",
-  "Award trophies and plaques",
-  "Customized smart diaries",
-  "Wellness and self-care hampers"
+  "employee welcome kit gift set",
+  "eco friendly corporate gift set",
+  "premium backpack laptop bag",
+  "bluetooth speaker tech gifting",
+  "luxury drinkware bottle flask",
+  "power bank tech accessories",
+  "diwali corporate gift hampers",
+  "desk accessories pen stand office",
+  "custom apparel t-shirt hoodie",
+  "wellness self care gift set"
 ];
 
 const animatedHeroWords = ["teams", "clients", "partners", "employees"];
@@ -76,31 +76,44 @@ const giftInputPlaceholder = "e.g. Diwali gifts for 200 employees...";
 
 function getScore(product, query, selectedWords) {
   let score = 0;
-  const q = query.toLowerCase();
-  const searchWords = (product.leader_search_words || []).map(w => w.toLowerCase());
 
+  const tags = product.allTags || [];
+
+  // 🔥 BREAK QUERY INTO WORDS
+  const words = query.toLowerCase().split(" ").filter(Boolean);
+
+  // ---------------- TAG MATCH ----------------
   if (selectedWords.length > 0) {
-    const hasAll = selectedWords.every(word => searchWords.includes(word));
-    const hasSome = selectedWords.some(word => searchWords.includes(word));
-    if (hasAll) score += 50; 
-    else if (hasSome) score += 10; 
-    else return 0; 
+    const hasAll = selectedWords.every(word =>
+      tags.some(tag => tag.includes(word))
+    );
+
+    const hasSome = selectedWords.some(word =>
+      tags.some(tag => tag.includes(word))
+    );
+
+    if (hasAll) score += 60;
+    else if (hasSome) score += 20;
+    else return 0;
   }
 
-  if (q && product.name && product.name.toLowerCase().includes(q)) score += 20;
-
-  if (q && searchWords.length > 0) {
-    searchWords.forEach((word) => {
-      if (word.includes(q) || q.includes(word)) score += 10;
+  // ---------------- NAME MATCH (WORD LEVEL) ----------------
+  if (words.length > 0) {
+    words.forEach(word => {
+      if (product.name?.toLowerCase().includes(word)) {
+        score += 10;
+      }
     });
   }
 
-  if (q && score === 0) {
-    const nameWords = product.name ? product.name.toLowerCase().split(" ") : [];
-    if (nameWords.some(nw => q.includes(nw))) score += 5;
-  }
-
-  if (!q && selectedWords.length > 0 && score > 0) return score;
+  // ---------------- TAG MATCH (WORD LEVEL) ----------------
+  words.forEach(word => {
+    tags.forEach(tag => {
+      if (tag.includes(word)) {
+        score += 8;
+      }
+    });
+  });
 
   return score;
 }
@@ -170,15 +183,34 @@ export default function App() {
     return () => { if (heroSearchRef.current) observer.unobserve(heroSearchRef.current); };
   }, []);
 
-  const { allProducts, uniqueWords } = useMemo(() => {
-    const rawList = Array.isArray(productsData) ? productsData : (productsData?.products || []);
-    const wordsSet = new Set();
-    const processed = rawList.map((p, index) => {
-      if (Array.isArray(p.leader_search_words)) p.leader_search_words.forEach(w => wordsSet.add(w.toLowerCase()));
-      return { ...p, uniqueId: p.id || `prod-${index}` };
-    });
-    return { allProducts: processed, uniqueWords: Array.from(wordsSet).sort() };
-  }, []);
+  const { allProducts, uniqueTags } = useMemo(() => {
+  const rawList = Array.isArray(productsData)
+    ? productsData
+    : (productsData?.products || []);
+
+  const tagSet = new Set();
+
+  const processed = rawList.map((p, index) => {
+    const tags = [
+      ...(p.autoTags?.categoryType || []),
+      ...(p.autoTags?.useCase || []),
+      ...(p.autoTags?.attributes || [])
+    ];
+
+    tags.forEach(t => tagSet.add(t.toLowerCase()));
+
+    return {
+      ...p,
+      uniqueId: p.id || `prod-${index}`,
+      allTags: tags.map(t => t.toLowerCase())
+    };
+  });
+
+  return {
+    allProducts: processed,
+    uniqueTags: Array.from(tagSet).sort()
+  };
+}, []);
 
   const showcaseProducts = useMemo(() => allProducts.slice(0, 8), [allProducts]);
   const canSubmit = (input.trim().length > 1 || selectedWords.length > 0) && !isLoading;
@@ -213,20 +245,34 @@ export default function App() {
   };
 
   const handleInputChange = (val) => {
-    setInput(val);
-    if (val.trim().length > 1) {
-      const q = val.toLowerCase();
-      const matches = allProducts.filter(p => p.name.toLowerCase().includes(q)).map(p => p.name);
-      setSuggestions(Array.from(new Set(matches)).slice(0, 5));
-    } else {
-      setSuggestions([]);
-    }
-    if (typingTimeout) clearTimeout(typingTimeout);
-    setTypingTimeout(setTimeout(() => {
-      if (val.trim().length > 1 || selectedWords.length > 0) executeSearch(val, selectedWords);
-      else if (val.trim().length === 0 && selectedWords.length === 0) setResult(null);
-    }, 500));
-  };
+  setInput(val);
+
+  if (val.trim().length > 1) {
+    const q = val.toLowerCase();
+
+    const nameMatches = allProducts
+      .filter(p => p.name.toLowerCase().includes(q))
+      .map(p => p.name);
+
+    const tagMatches = uniqueTags
+      .filter(tag => tag.includes(q));
+
+    const combined = [...new Set([...nameMatches, ...tagMatches])];
+
+    setSuggestions(combined.slice(0, 8));
+  } else {
+    setSuggestions([]);
+  }
+
+  if (typingTimeout) clearTimeout(typingTimeout);
+
+  setTypingTimeout(setTimeout(() => {
+    if (val.trim().length > 1 || selectedWords.length > 0)
+      executeSearch(val, selectedWords);
+    else if (val.trim().length === 0 && selectedWords.length === 0)
+      setResult(null);
+  }, 400));
+};
 
   const handleSuggestionClick = (suggestionText) => {
     setInput(suggestionText);
@@ -408,10 +454,10 @@ export default function App() {
               {/* Filter Tags */}
               <div className="w-full">
                  <p className="mb-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
-                   Or browse by popular tags
+                   Or Browse by smart categories
                  </p>
                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1 pb-1 scrollbar-hide">
-                   {uniqueWords.slice(0, 15).map(word => (
+                   {uniqueTags.slice(0, 20).map(word => (
                       <button
                         key={word}
                         onClick={() => toggleWord(word)}
