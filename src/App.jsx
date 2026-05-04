@@ -413,19 +413,19 @@ export default function App() {
             
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-black tracking-wide text-slate-700 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.1)] transition-transform hover:scale-105">
               <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse ring-4 ring-green-500/20"></span>
-              AI-Powered Corporate Gifting
+              OpenAI-Powered Gifting Company
             </div>
 
             <h1 className="w-full text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-[5rem] font-black leading-[1.05] tracking-tight text-slate-900 min-h-[100px] sm:min-h-[160px] drop-shadow-sm">
-              Real products your <br className="hidden sm:block"/>
+              Products <br className="hidden sm:block"/>
               {/* UPGRADE: Gold-Foil Typography */}
               <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 bg-clip-text text-transparent animate-gradient-x inline-block animate-fade-scroll py-2">
                 {animatedHeroWords[heroWordIndex]}
               </span> will love.
             </h1>
 
-            <p className="mt-4 mb-8 text-lg sm:text-xl leading-relaxed text-slate-600 font-medium max-w-lg">
-              Perfect gifts, instantly curated.
+            <p className="mt-4 mb-8 text-sm sm:text-xl leading-relaxed text-slate-600 font-small max-w-lg">
+              Curating smiles since 2010, Wholesale trader & importer specializing in high-quality corporate gifts, merchandise, and electronics.
             </p>
 
             {/* UPGRADE: MOVED SEARCH BAR HIGHER & INCREASED Z-INDEX */}
@@ -771,10 +771,10 @@ function FomoNotification() {
       const randomEvent = events[Math.floor(Math.random() * events.length)];
       setNotification(randomEvent);
       setIsVisible(true);
-      setTimeout(() => setIsVisible(false), 5000);
+      setTimeout(() => setIsVisible(false), 10000);
     };
 
-    const initialDelay = setTimeout(triggerFomo, 3000);
+    const initialDelay = setTimeout(triggerFomo, 10000);
     const interval = setInterval(triggerFomo, 20000);
     return () => { clearTimeout(initialDelay); clearInterval(interval); };
   }, [events]);
@@ -782,13 +782,21 @@ function FomoNotification() {
   if (!notification) return null;
 
   return (
-    <div className={`fixed bottom-28 left-4 md:bottom-8 md:left-8 z-50 max-w-xs bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 flex items-start gap-3 transition-all duration-500 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0 ring-4 ring-green-50">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    /* Reduced max-width, padding, and gap */
+    <div className={`fixed bottom-40 left-4 md:bottom-8 md:left-8 z-50 max-w-[160px] md:max-w-[200px] bg-white/95 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-100 flex items-start gap-2 transition-all duration-500 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+      
+      {/* Icon container reduced from w-8 to w-4 and ring reduced */}
+      <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0 ring-2 ring-green-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
       </div>
+
       <div>
-        <p className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">{notification}</p>
-        <p className="text-[10px] text-slate-400 font-bold mt-1">Just now • Verified Inquiry</p>
+        {/* Font size reduced to 9px/10px range */}
+        <p className="text-[9px] md:text-[10px] font-bold text-slate-700 leading-tight">{notification}</p>
+        <p className="text-[7px] md:text-[8px] text-slate-400 font-bold mt-0.5">Just now • Verified</p>
       </div>
     </div>
   );
@@ -1298,11 +1306,11 @@ function Footer() {
             <div className="grid gap-4 text-base text-slate-300">
               <p className="flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 shrink-0 mt-0.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad<br />India</span>
+                <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad <br />PAN NUMBER AMBPG5988N<br />GST NUMBER 09AMBPG5988N1ZB</span>
               </p>
               <div className="h-px w-full bg-slate-700/50 my-2"></div>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919990093697"><span className="font-bold">+91 9990093697</span></a>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:vishal.giftszone@gmail.com"><span className="font-bold">vishal.giftszone@gmail.com</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919990093697"><span className="font-bold">Mobile: +91 9990093697</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:vishal.giftszone@gmail.com"><span className="font-bold">Email: vishal.giftszone@gmail.com</span></a>
             </div>
           </div>
         </div>
