@@ -373,7 +373,7 @@ export default function App() {
           <a className="flex items-center gap-2 group" href="#top">
             <BrandLogo className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500 drop-shadow-sm group-active:scale-95 transition-transform" />
             <span className="text-base sm:text-xl font-black tracking-tight text-slate-900">
-              CorporateGifts<span className="text-orange-500">Zone.</span>
+              CorporateGifts<span className="text-orange-500">Zone</span>
             </span>
           </a>
           <div className="hidden items-center gap-8 text-sm font-bold text-slate-500 md:flex">
@@ -550,6 +550,10 @@ export default function App() {
         ))}
       </section>
 
+      {/* --- INJECTED NEW SEO COMPONENTS HERE --- */}
+      <ProductShowcaseGallery />
+      <LocalSeoMatrix />
+<FAQSection />
       <Footer />
 
       <FomoNotification />
@@ -782,10 +786,8 @@ function FomoNotification() {
   if (!notification) return null;
 
   return (
-    /* Reduced max-width, padding, and gap */
     <div className={`fixed bottom-40 left-4 md:bottom-8 md:left-8 z-50 max-w-[160px] md:max-w-[200px] bg-white/95 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-100 flex items-start gap-2 transition-all duration-500 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
       
-      {/* Icon container reduced from w-8 to w-4 and ring reduced */}
       <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0 ring-2 ring-green-50">
         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -794,7 +796,6 @@ function FomoNotification() {
       </div>
 
       <div>
-        {/* Font size reduced to 9px/10px range */}
         <p className="text-[9px] md:text-[10px] font-bold text-slate-700 leading-tight">{notification}</p>
         <p className="text-[7px] md:text-[8px] text-slate-400 font-bold mt-0.5">Just now • Verified</p>
       </div>
@@ -1274,7 +1275,7 @@ function Footer() {
             <div className="flex items-center gap-3 mb-6">
               <BrandLogo className="w-10 h-10 text-orange-500" />
               <span className="text-xl font-black tracking-tight text-white">
-                CorporateGifts<span className="text-orange-500">Zone.</span>
+                CorporateGifts<span className="text-orange-500">Zone</span>
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">Your Branding Partner.</h2>
@@ -1359,6 +1360,230 @@ function Footer() {
   );
 }
 
+function LocalSeoMatrix() {
+  return (
+    <section className="w-full bg-white py-16 sm:py-24 border-y border-slate-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-4">
+             Direct Delivery Network
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">Specialized Gifting Logistics Across NCR</h2>
+          <p className="text-slate-500 text-base sm:text-lg leading-relaxed font-medium">
+            Direct-to-office deliveries and bulk procurement solutions managed from our central hubs in Ghaziabad.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+          {/* Delhi */}
+          <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+            <h3 className="text-xl font-black text-slate-900 border-b-2 border-slate-200 pb-4 mb-4">Delhi Corporate Hubs</h3>
+            <p className="text-sm text-slate-500 font-medium mb-6">Serving Connaught Place, Okhla, and Aerocity.</p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Executive Welcome Kits
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Annual Event Giveaways
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Same-Day Sample Delivery
+              </li>
+            </ul>
+          </div>
+
+          {/* Noida & Ghaziabad */}
+          <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+            <h3 className="text-xl font-black text-slate-900 border-b-2 border-slate-200 pb-4 mb-4">Noida & Ghaziabad</h3>
+            <p className="text-sm text-slate-500 font-medium mb-6">Serving Sector 62, Film City, and Vasundhara.</p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Bulk IT & Tech Hampers
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Eco-Friendly Joining Kits
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Warehouse-Direct Pricing
+              </li>
+            </ul>
+          </div>
+
+          {/* Gurgaon */}
+          <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+            <h3 className="text-xl font-black text-slate-900 border-b-2 border-slate-200 pb-4 mb-4">Gurgaon Business Centers</h3>
+            <p className="text-sm text-slate-500 font-medium mb-6">Serving Cyber City, Udyog Vihar, and Golf Course Road.</p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Premium Leather Trousseaus
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Festive Rewards Programs
+              </li>
+              <li className="flex items-center gap-3 text-sm font-bold text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Custom Branding & Engraving
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+      </div>
+    </section>
+  );
+}
+
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(0); // First item open by default
+
+  const faqs = [
+    {
+      question: "What is your minimum order quantity (MOQ) for corporate gifts?",
+      answer: "To unlock our wholesale pricing tiers, our standard MOQ starts at 50 units. However, for ultra-premium executive leather sets or VIP hampers, we can accommodate micro-batches. Contact our team for customized volume requirements."
+    },
+    {
+      question: "Do you deliver bulk orders across Delhi, Noida, and Gurgaon?",
+      answer: "Yes, we have specialized logistics hubs in Ghaziabad and Delhi. We offer direct-to-office bulk deliveries across the entire NCR region, including Cyber City, Connaught Place, and Sector 62 tech parks, ensuring safe and timely arrival."
+    },
+    {
+      question: "How does the 'Let Them Choose' Gift Link system work?",
+      answer: "It eliminates procurement headaches. You select a budget tier (e.g., ₹3,500/gift), and we generate a secure digital catalog link. You email this to your team; they select their preferred item and enter their own home address. We handle all the pan-India shipping."
+    },
+    {
+      question: "Can we customize the joining kits with our company logo?",
+      answer: "Absolutely. We offer full-scale custom branding including laser engraving on metal drinkware, UV printing on tech gadgets, and screen printing on apparel. We also design custom magnetic packaging boxes with your corporate identity."
+    },
+    {
+      question: "Do you provide GST invoices for corporate procurement?",
+      answer: "Yes, CorporateGiftsZone provides 100% compliant GST invoicing for all B2B orders to ensure you can claim your input tax credit effortlessly."
+    }
+  ];
+
+  // Dynamically generate the SEO Schema based on the FAQ data
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
+  return (
+    <section className="w-full bg-white py-16 sm:py-24 border-t border-slate-200" id="faq">
+      {/* Invisible JSON-LD Payload for Google Bots */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 border border-orange-200 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-4">
+             Procurement Questions
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 mb-4">Frequently Asked Questions</h2>
+          <p className="text-slate-500 text-base font-medium">Everything you need to know about our bulk ordering and logistics.</p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div 
+                key={index} 
+                className={`border rounded-2xl transition-all duration-300 overflow-hidden ${isOpen ? 'border-orange-500 shadow-lg shadow-orange-500/10 bg-white' : 'border-slate-200 bg-slate-50 hover:border-slate-300'}`}
+              >
+                <button 
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+                >
+                  <span className={`text-base sm:text-lg font-black pr-4 ${isOpen ? 'text-slate-900' : 'text-slate-700'}`}>
+                    {faq.question}
+                  </span>
+                  <span className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-transform duration-300 ${isOpen ? 'bg-orange-500 text-white rotate-180' : 'bg-slate-200 text-slate-500'}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      {isOpen ? <line x1="5" y1="12" x2="19" y2="12"></line> : <><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></>}
+                    </svg>
+                  </span>
+                </button>
+                
+                <div 
+                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
+                >
+                  <p className="text-slate-600 font-medium leading-relaxed border-t border-slate-100 pt-4">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductShowcaseGallery() {
+  return (
+    <section className="w-full bg-slate-50 py-16 sm:py-24" id="case-studies">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">Curated Corporate Collections</h2>
+          <p className="text-slate-500 text-base sm:text-lg font-medium">Explore our recent bulk deliveries across top business districts in Delhi NCR.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-10">
+          {/* Collection 1 */}
+          <div className="relative overflow-hidden rounded-[2rem] group cursor-pointer bg-slate-200 aspect-[4/5] shadow-sm hover:shadow-2xl transition-all">
+            <img 
+              src="/images/tech-onboarding-kit.jpg" 
+              alt="Premium IT employee joining kit delivered to a corporate tech park in Sector 62 Noida"
+              onError={(e) => { e.currentTarget.src = buildFallbackImageUrl(1); }}
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+              <h3 className="text-white text-2xl font-black mb-1">The Onboarding Kit</h3>
+              <p className="text-slate-300 text-sm font-bold uppercase tracking-wider">Tech Parks, Noida</p>
+            </div>
+          </div>
+
+          {/* Collection 2 */}
+          <div className="relative overflow-hidden rounded-[2rem] group cursor-pointer bg-slate-200 aspect-[4/5] shadow-sm hover:shadow-2xl transition-all">
+            <img 
+              src="/images/executive-leather-set.jpg" 
+              alt="Luxury corporate leather gift set being reviewed by executives in Cyber City Gurgaon"
+              onError={(e) => { e.currentTarget.src = buildFallbackImageUrl(2); }}
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+              <h3 className="text-white text-2xl font-black mb-1">Executive Trousseau</h3>
+              <p className="text-slate-300 text-sm font-bold uppercase tracking-wider">Cyber City, Gurgaon</p>
+            </div>
+          </div>
+
+          {/* Collection 3 */}
+          <div className="relative overflow-hidden rounded-[2rem] group cursor-pointer bg-slate-200 aspect-[4/5] shadow-sm hover:shadow-2xl transition-all">
+            <img 
+              src="/images/diwali-bulk-hampers.jpg" 
+              alt="Bulk Diwali corporate gift hampers with eco-friendly packaging for Delhi corporate offices"
+              onError={(e) => { e.currentTarget.src = buildFallbackImageUrl(3); }}
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
+              <h3 className="text-white text-2xl font-black mb-1">Festive Bulk Collections</h3>
+              <p className="text-slate-300 text-sm font-bold uppercase tracking-wider">Connaught Place, Delhi</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
 function buildFallbackImageUrl(index) {
   const label = `Gift ${String(index + 1).padStart(2, "0")}`;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480"><rect width="640" height="480" fill="#f8fafc"/><rect x="48" y="48" width="544" height="384" rx="40" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/><text x="320" y="246" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#94a3b8">${label}</text></svg>`;

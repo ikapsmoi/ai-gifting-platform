@@ -1,4 +1,11 @@
+# Allow all search engine bots full access to crawl the React application
 User-agent: *
 Allow: /
+
+# Block bots from crawling internal admin or API routes (if you add them later)
+Disallow: /api/
+Disallow: /admin/
+
+# Point bots directly to the master sitemap
 
 Sitemap: https://www.giftszone.in/sitemap.xml
