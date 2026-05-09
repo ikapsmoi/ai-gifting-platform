@@ -554,6 +554,7 @@ export default function App() {
       <ProductShowcaseGallery />
       <LocalSeoMatrix />
 <FAQSection />
+<AIGiftBriefGenerator />
       <Footer />
 
       <FomoNotification />
@@ -1262,6 +1263,199 @@ function HeroProductBoard({ products }) {
     </div>
   );
 }
+
+function AIGiftBriefGenerator() {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState("");
+  
+  // Form State
+  const [recipientCount, setRecipientCount] = useState(250);
+  const [budget, setBudget] = useState(1500);
+  const [occasion, setOccasion] = useState("Welcome/Onboarding Kit");
+  const [vibe, setVibe] = useState("Modern Tech & Gadgets");
+  const [delivery, setDelivery] = useState("Bulk Office Delivery");
+
+  const totalInvestment = recipientCount * budget;
+
+  // Dynamic AI Suggestions based on Vibe and Budget
+  const getSuggestions = () => {
+    if (vibe === "Modern Tech & Gadgets") {
+      return budget > 3000 
+        ? ["Smart Fitness Watches", "Premium Noise-Cancelling Earbuds", "Wireless Power Banks"] 
+        : ["Bluetooth Desk Speakers", "Multi-charging Cables", "Digital Desk Clocks"];
+    }
+    if (vibe === "Premium Executive Leather") {
+      return budget > 3000 
+        ? ["Genuine Leather Laptop Bags", "Executive Desk Organizers", "Premium Leather Compendiums"] 
+        : ["Leather Bound Journals", "RFID Blocking Wallets", "Leather Card Holders"];
+    }
+    if (vibe === "Eco-Friendly & Sustainable") {
+      return ["Bamboo Flasks", "Recycled Cotton Tote Bags", "Cork Base Desk Accessories"];
+    }
+    return ["Gourmet Coffee Hampers", "Aromatherapy Diffusers", "Premium Drinkware Sets"]; // Wellness default
+  };
+
+  const handleGenerate = (e) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    const briefSummary = `Hi, I used the AI Generator. I need a quote for ${recipientCount} ${occasion}s. Budget is approx ₹${budget}/person. Vibe: ${vibe}. Delivery: ${delivery}. Email for the official brief: ${email}`;
+    
+    // Pass null for event to rely on global handler, pass the dynamic message
+    handleWhatsAppClick(null, briefSummary);
+    setStep(3); // Show success state
+  };
+
+  return (
+    <section className="w-full bg-slate-900 py-16 sm:py-24 border-y border-slate-800 relative overflow-hidden" id="ai-generator">
+      {/* Ambient Background */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 bg-slate-800 text-slate-300 border border-slate-700 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-4">
+             Instant Procurement Plan
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4">AI Gift Brief Architect</h2>
+          <p className="text-slate-400 text-base sm:text-lg leading-relaxed font-medium">
+            Define your parameters below. Our engine will instantly calculate your investment and generate a structured sourcing brief for your management team.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_450px] gap-8 items-start">
+          
+          {/* LEFT: THE INPUT CONTROLS */}
+          <div className="bg-slate-800/50 backdrop-blur-md rounded-[2rem] p-6 sm:p-10 border border-slate-700 shadow-xl">
+            <div className="space-y-8">
+              
+              {/* Sliders */}
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div>
+                  <div className="flex justify-between items-end mb-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recipient Count</label>
+                    <span className="text-xl font-black text-white">{recipientCount}</span>
+                  </div>
+                  <input type="range" min="50" max="5000" step="50" value={recipientCount} onChange={(e) => setRecipientCount(Number(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between items-end mb-4">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Budget Per Person</label>
+                    <span className="text-xl font-black text-white">₹{budget}</span>
+                  </div>
+                  <input type="range" min="500" max="10000" step="100" value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500" />
+                </div>
+              </div>
+
+              <hr className="border-slate-700" />
+
+              {/* Selectors */}
+              <div className="space-y-6">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Occasion</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Welcome/Onboarding Kit", "Annual Rewards", "Executive Gifting", "Premium Stationary", "Diwali/Festive Gifting","Executive & VIP", "Smart Tech"].map(opt => (
+                      <button key={opt} onClick={() => setOccasion(opt)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${occasion === opt ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-900/50 text-slate-400 border border-slate-700 hover:border-slate-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Desired Aesthetic</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Modern Tech & Gadgets", "Premium Executive Leather", "Sustainable & Eco-Friendly", "Wellness & Self-Care"].map(opt => (
+                      <button key={opt} onClick={() => setVibe(opt)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${vibe === opt ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-900/50 text-slate-400 border border-slate-700 hover:border-slate-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Logistics Preference</label>
+                  <div className="flex bg-slate-900/50 p-1.5 rounded-xl border border-slate-700">
+                    {["Bulk Office Delivery", "Individual Gift Links"].map(opt => (
+                      <button key={opt} onClick={() => setDelivery(opt)} className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-lg transition-all ${delivery === opt ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* RIGHT: THE LIVE BRIEF */}
+          <div className="bg-white rounded-[2rem] p-8 shadow-2xl flex flex-col h-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-slate-900"></div>
+            
+            <h3 className="text-2xl font-black text-slate-900 mb-6 border-b border-slate-100 pb-4">Generated Brief</h3>
+            
+            <div className="flex-1 space-y-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Estimated Investment</p>
+                <p className="text-4xl font-black text-slate-900">₹{totalInvestment.toLocaleString()}</p>
+                <p className="text-xs font-bold text-slate-500 mt-1">Excluding GST. Volume discounts may apply.</p>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                  Sourcing <strong className="text-slate-900">{recipientCount}</strong> units for <strong className="text-slate-900">{occasion}</strong>. 
+                  Curations will focus on <strong className="text-slate-900">{vibe}</strong>. 
+                  Logistics to be handled via <strong className="text-slate-900">{delivery}</strong>.
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">AI Product Recommendations</p>
+                <ul className="space-y-2">
+                  {getSuggestions().map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100">
+              {step === 1 ? (
+                <button onClick={() => setStep(2)} className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl">
+                  Finalize & Export Brief
+                </button>
+              ) : step === 2 ? (
+                <form onSubmit={handleGenerate} className="space-y-3 animate-slide-up">
+                  <input 
+                    type="email" 
+                    required 
+                    placeholder="Enter Work Email for PDF" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold outline-none focus:ring-2 focus:ring-slate-900" 
+                  />
+                  <button type="submit" className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-black transition-all active:scale-95 shadow-xl relative overflow-hidden animate-shimmer">
+                    <span className="relative z-10">Send via WhatsApp</span>
+                  </button>
+                </form>
+              ) : (
+                <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 text-center animate-slide-up">
+                  <p className="font-black text-sm mb-1">Brief Generated!</p>
+                  <p className="text-xs font-medium">Please check your WhatsApp to connect with our procurement team.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 function Footer() {
   const seamlessLogos = [...deliveredBrandLogos, ...deliveredBrandLogos, ...deliveredBrandLogos, ...deliveredBrandLogos];
