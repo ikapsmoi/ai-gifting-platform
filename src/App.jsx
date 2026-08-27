@@ -3,7 +3,7 @@ import productsData from "./data/transformed_products.json";
 
 // --- WhatsApp Dual-Number Lead Splitter ---
 const SALES_NUMBERS = [
-  "919560700855", // Number 1 (Neha)
+  "919871621921", // Number 1 (Ishan)
   "919871621921"  // Number 2
 ];
 
@@ -1504,7 +1504,7 @@ function Footer() {
                 <span>SG Alpha Tower, 6th Floor<br />Vasundhara, Ghaziabad <br />PAN NUMBER AMBPG5988N<br />GST NUMBER 09AMBPG5988N1ZB</span>
               </p>
               <div className="h-px w-full bg-slate-700/50 my-2"></div>
-              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919560700855"><span className="font-bold">Mobile: 919560700855</span></a>
+              <a className="flex items-center gap-3 hover:text-white transition-colors" href="tel:+919871621921"><span className="font-bold">Mobile: 919871621921</span></a>
               <a className="flex items-center gap-3 hover:text-white transition-colors" href="mailto:ikkapoor111@gmail.com"><span className="font-bold">Email: ikkapoor111@gmail.com</span></a>
             </div>
           </div>
